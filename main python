@@ -1,0 +1,175 @@
+# Numpy and pandas for mathematical operations
+import numpy as np
+import pandas as pd
+
+# To read csv dataset files
+import csv
+
+# Regular expression, for pattern matching
+import re
+
+# The preprocessing module provides functions for data preprocessing tasks such as scaling and handling missing data.
+from sklearn import preprocessing
+
+# For Visualization
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# train-test split
+from sklearn.model_selection import train_test_split
+
+# For building decision tree models, and _tree to access low-level decision of tree structure
+from sklearn.tree import DecisionTreeClassifier, _tree
+
+# For evaluating model performance using cross_validation
+from sklearn.model_selection import cross_val_score
+
+# Import Support Vector Classification from sklearn library for model deployment
+from sklearn.svm import SVC
+
+# Remove unecessary warnings
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+!pip install espeak  
+!pip install pyttsx3  
+
+import pyttsx3  # Import the pyttsx3 library
+
+# Initialize the text-to-speech engine
+engine = pyttsx3.init()
+
+# Set properties before adding anything to speak
+engine.setProperty('rate', 150)  # Speed of speech (default is 200)
+engine.setProperty('volume', 1)  # Volume (0.0 to 1.0)
+
+# Text you want to convert to speech
+text = "Hello, welcome to the text-to-speech demonstration using pyttsx3!"
+
+# Speak the text
+engine.say(text)
+
+# Wait until the speech is finished
+engine.runAndWait()
+
+# Initialize the text-to-speech engine
+engine = pyttsx3.init()
+
+# Function to convert text to speech
+def text_to_speech(text):
+    # Set properties (optional)
+    engine.setProperty('rate', 150)    # Speed percent (can go over 100)
+    engine.setProperty('volume', 0.9)  # Volume 0-1
+
+    # Convert text to speech
+    engine.say(text)
+    engine.runAndWait()
+# Load Datasets for training and testing
+import pandas as pd
+training = pd.read_csv('Training.csv')
+testing= pd.read_csv('Testing.csv')
+     
+
+# Number of rows and columns
+shape = training.shape
+print("Shape of Training dataset: ", shape)
+
+# Description about dataset
+description = training.describe()
+description
+
+# Information about Dataset
+info_df = training.info()
+info_df
+# To find total number of null values in dataset
+null_values_count = training.isnull().sum()
+null_values_count
+
+# Print First eight rows of the Dataset
+training.head(8)
+
+cols= training.columns
+cols= cols[:-1]
+import matplotlib.pyplot as plt
+import seaborn as sns
+# x stores every column data except the last one
+x = training[cols]
+
+# y stores the target variable for disease prediction
+y = training['prognosis']
+     
+
+# Figsize used to define size of the figure
+plt.figure(figsize=(10, 20))
+# Countplot from seaborn on the target varable and data accesed from Training dataset
+sns.countplot(y='prognosis', data=training)
+# Tile for title of the figur
+plt.title('Distribution of Target (Prognosis)')
+# Show used to display the figure on screen
+plt.show()
+
+# Grouping Data by Prognosis and Finding Maximum Values
+reduced_data = training.groupby(training['prognosis']).max()
+
+# Display the first five rows of the reduced data
+reduced_data.head()
+
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+# Mapping categorical strings to numerical labels using LabelEncoder
+le = preprocessing.LabelEncoder()
+
+# Fit the label encoder to the target variable 'y' and transform it
+le.fit(y)
+y = le.transform(y)
+     
+
+# Splitting the dataset into training and testing
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, random_state=42)
+
+# Features for testing except the last variable
+testx    = testing[cols]
+
+# Target variable for Testing
+testy    = testing['prognosis']
+
+# Transforming categorical value into numerical labels
+testy    = le.transform(testy)
+
+# Decision Tree Model Implementation
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import cross_val_score
+from sklearn.svm import SVC
+import numpy as np
+# Decision Tree Model Implementation
+clf1  = DecisionTreeClassifier()
+
+# Fitting the Training Data
+clf = clf1.fit(x_train,y_train)
+
+# Cross-Validation for Model Evaluation
+scores = cross_val_score(clf, x_test, y_test, cv=3)
+
+# Print the Mean Score
+print("Mean Score: ",scores.mean())
+     
+
+
+# Creating Support Vector Machine Model
+model=SVC()
+
+# Train the model on Training Data
+model.fit(x_train,y_train)
+
+# Print accuracy for SVM Model on the training set
+print("Accuracy score for svm: ", model.score(x_test,y_test))
+
+# Calculate feature importance using the trained Decision tree classifier
+importances = clf.feature_importances_
+
+# Sort indices in descending order based on feature importance
+indices = np.argsort(importances)[::-1]
+
+# Get feature names corresponding to their importance score
+features = cols
+
