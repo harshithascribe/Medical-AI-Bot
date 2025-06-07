@@ -1,0 +1,99 @@
+import csv
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+import gradio as gr
+
+def getSeverityDict():
+    global severityDictionary
+    severityDictionary = {}
+    with open(r"C:\Users\harshulava\OneDrive\Desktop\health bot datasets\symptom_severity.csv") as csv_file:
+        csv_reader = csv.reader(csv_file)
+        for row in csv_reader:
+            severityDictionary[row[0]] = row[1]
+
+def getDescription():
+    global description_list
+    description_list = {}
+    with open(r"C:\Users\harshulava\OneDrive\Desktop\health bot datasets\symptom_Description.csv") as csv_file:
+        csv_reader = csv.reader(csv_file)
+        for row in csv_reader:
+            description_list[row[0]] = row[1]
+
+def getprecautionDict():
+    global precautionDictionary
+    precautionDictionary = {}
+    with open(r"C:\Users\harshulava\OneDrive\Desktop\health bot datasets\symptom_precaution.csv") as csv_file:
+        csv_reader = csv.reader(csv_file)
+        for row in csv_reader:
+            precautionDictionary[row[0]] = row[1:]
+
+def predict_disease(symptoms):
+    df = pd.read_csv(r"C:\Users\harshulava\OneDrive\Desktop\health bot datasets\Training.csv")
+    X = df.iloc[:, :-1]
+    y = df['prognosis']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=20)
+    
+    clf = DecisionTreeClassifier()
+    clf.fit(X_train, y_train)
+    
+    symptoms_dict = {symptom: index for index, symptom in enumerate(X.columns)}
+    input_vector = np.zeros(len(symptoms_dict))
+    
+    for symptom in symptoms:
+        if symptom in symptoms_dict:
+            input_vector[symptoms_dict[symptom]] = 1
+    
+    prediction = clf.predict([input_vector])[0]
+    description = description_list.get(prediction, "No description available.")
+    precautions = precautionDictionary.get(prediction, ["No precautions available."])
+    
+    return prediction, description, precautions
+
+def gradio_interface(name, age, gender, days, symptoms, medical_history):
+    if not symptoms:
+        return "Please select your symptoms.", "", "", "", "", ""
+    
+    prediction, description, precautions = predict_disease(symptoms)
+    precautions_text = "\n".join(f"{i + 1}. {precaution}" for i, precaution in enumerate(precautions))
+    
+    return (
+        f"Hello {name}, you may have {prediction}.",
+        f"Age: {age}, Gender: {gender}",
+        description,
+        precautions_text,
+        medical_history,
+        f"Symptoms duration: {days} days"
+    )
+
+# Load data into dictionaries
+getSeverityDict()
+getDescription()
+getprecautionDict()
+
+# Gradio interface layout
+interface = gr.Interface(
+    fn=gradio_interface,
+    inputs=[
+        gr.Textbox(label="Your Name", placeholder="Enter your name"),
+        gr.Number(label="Your Age", precision=0, value=0),
+        gr.Radio(choices=["Male", "Female", "Other"], label="Gender"),
+        gr.Number(label="Days with Symptoms", precision=0, value=0),
+        gr.CheckboxGroup(choices=list(severityDictionary.keys()), label="Select Your Symptoms"),
+        gr.Textbox(label="Medical History", placeholder="Enter your medical history (optional)")
+    ],
+    outputs=[
+        gr.Textbox(label="Diagnosis"),
+        gr.Textbox(label="Patient Info"),
+        gr.Textbox(label="Description"),
+        gr.Textbox(label="Precautions"),
+        gr.Textbox(label="Medical History"),
+        gr.Textbox(label="Symptoms Duration")
+    ],
+    title="Healthcare ChatBot",
+    description="A healthcare chatbot to help predict potential diseases based on symptoms, with medical history features."
+)
+
+# Launch the Gradio app
+interface.launch()
