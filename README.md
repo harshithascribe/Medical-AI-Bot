@@ -140,10 +140,6 @@ The Decision Tree Classifier is trained on the provided training data. To retrai
 3. Make your changes
 4. Submit a pull request
 
-## License
-
-[Specify your license here, e.g., MIT License]
-
 ## Disclaimer
 
 This project is for educational and informational purposes only. It should not be used as a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of qualified health providers with questions about medical conditions.
@@ -155,3 +151,4 @@ This project is for educational and informational purposes only. It should not b
 - Enhanced user authentication and data privacy
 - Integration with telemedicine platforms
 - Improved model accuracy with more diverse datasets
+
